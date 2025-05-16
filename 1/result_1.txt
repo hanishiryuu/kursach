@@ -1,0 +1,12 @@
+is 7
+name 7
+bond 6
+damme 6
+my 6
+van 5
+claude 4
+jean 3
+hi 2
+james 1
+what 1
+your 1
