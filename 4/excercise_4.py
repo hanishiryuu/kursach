@@ -32,6 +32,7 @@ class App(Frame):
     self.current_iteration = 0
     self.iterations_log = []
     self.initial_disks = []
+    self.towers_top_disks = {} # tower_index: disk_diameter
 
     self.canvas = Canvas(self.master)
     self.input_id = Text(self.master, height=12, width=40)
@@ -94,55 +95,81 @@ class App(Frame):
       self.list_labels.append(line)
 
     self.get_initial_state()
-    self.total_iterations = self.calculate_total_iterations()
-    print(f"Общее количество итераций: {self.total_iterations}")
+    self.calculate_total_iterations()
     self.flag = False
  
   def get_initial_state(self):
     text = self.input_id.get("1.0", "end").replace("\n", "")
     if len(text) == 8 and text.isdigit():
         self.student_id = text
-    self.init_towers()
+    self.init_towers(update_existing=False)
     self.draw_towers()
 
-  def init_towers(self, make_colors=True):
-    self.towers = [[(0, "#000000") for _ in range(8)] for _ in range(72)]
-    for tower in range(8):
-      for row in range(int(self.student_id[tower])):
-        m = tower + 1
-        n = int(self.student_id[tower]) - row
-        if make_colors:
-          color = f"#{random.randint(100000, 999999)}"
-        self.towers[row][tower] = (m * 10 + n, color)
-        self.disks.append([self.towers[row][tower], row, tower])
 
-    self.initial_towers = self.towers.copy()
-    self.disks = sorted(self.disks, key=lambda x: x[0])
-    self.total_disks = len(self.disks)
-      
+
+
+
+
+
+  def init_towers(self, update_existing=True):
+    # self.towers = [[(0, "#000000") for _ in range(8)] for _ in range(72)]
+    # for tower in range(8):
+    #   is_added = False
+    #   for row in range(int(self.student_id[tower])):
+    #     m = tower + 1
+    #     n = int(self.student_id[tower]) - row
+    #     if make_colors:
+    #       color = f"#{random.randint(100000, 999999)}"
+    #     self.towers[row][tower] = (m * 10 + n, color)
+    #     self.disks.append([self.towers[row][tower][0], self.towers[row][tower][0], row, tower]) # diameter, color, row, tower
+
+    #     if row == int(self.student_id[tower]) - 1:
+    #       self.towers_top_disks[tower] = self.towers[row][tower][0]
+    #       is_added = True
+
+    #   if not is_added:
+    #     self.towers_top_disks[tower] = 0
+
+    # self.initial_towers = self.towers.copy()
+    # self.disks = sorted(self.disks, key=lambda x: x[0])
+    # self.total_disks = len(self.disks)
+    self.towers = {peg: [] for peg in range(8)}
+    self.towers_to_draw = [[(0, "#000000") for _ in range(8)] for _ in range(72)]
+    for index, digit in enumerate(self.student_id):
+      peg = 7 - index
+      n = int(digit)
+      if n > 0:
+        disks = [((peg + 1) * 10 + nn, f"#{random.randint(100000, 999999)}") for nn in range(1, n+1)]
+        self.disks.extend(disks)
+        self.towers[index] = sorted(disks, key=lambda x: x[0], reverse=True)
+    for tower in range(8):
+      for index, disk in enumerate(reversed(self.towers[tower])):
+        diameter, color = disk
+        row = len(self.towers[tower]) - index - 1
+        self.towers_to_draw[row][tower] = (diameter, color)
+    self.initial_towers = [disk for row in self.towers_to_draw for disk in row if disk[0] != 0]
+  
 
   def draw_towers(self):
     self.canvas.delete("all")
     self.draw_base()
     for display_tower in range(8):
-      real_tower = 7 - display_tower
-      for row in range(RINGS):
-        if self.towers[row][real_tower][0] == 0:
-          self.list_labels[row][display_tower].config(text="0")
-          self.list_labels[row][display_tower].config(fg=self.master["bg"])
-          self.list_labels[row][display_tower].config(state='normal')
+      real_tower = display_tower
+      for disk_index in range(len(self.towers[real_tower])):
+        if self.towers[real_tower][0] == 0:
+          self.list_labels[disk_index][display_tower].config(text="0")
+          self.list_labels[disk_index][display_tower].config(fg=self.master["bg"])
+          self.list_labels[disk_index][display_tower].config(state='normal')
           continue
-        line = self.towers[row][real_tower]
-        if isinstance(line[0], tuple):
-          line = line[0]
-        w = line[0]
-        color = line[1]
+        disk = self.towers_to_draw[disk_index][real_tower]
+        w = disk[0]
+        color = disk[1]
         x = x0 + display_tower * STEP - w / 2
-        y = y0 - HEIGHT * (row + 1)
+        y = y0 - HEIGHT * (disk_index + 1)
         self.canvas.create_rectangle(x, y, x + w, y + HEIGHT, outline=color, fill=color)
-        self.list_labels[row][display_tower].config(text=str(w))
-        self.list_labels[row][display_tower].config(fg=SHOW_LABEL)
-        self.list_labels[row][display_tower].config(state='normal')
+        self.list_labels[disk_index][display_tower].config(text=str(w))
+        self.list_labels[disk_index][display_tower].config(fg=SHOW_LABEL)
+        self.list_labels[disk_index][display_tower].config(state='normal')
     self.canvas.pack(fill=BOTH, expand=1)
 
   def draw_base(self):
@@ -163,7 +190,7 @@ class App(Frame):
 
   def draw_iteration(self, percent):
     target_iteration = percent / 100 * self.total_iterations
-    self.towers = self.initial_towers.copy()
+    self.towers_to_draw = self.initial_towers.copy()
 
     if '.' in str(target_iteration):
       before_comma, after_comma = str(target_iteration).split('.')
@@ -181,29 +208,26 @@ class App(Frame):
     self.draw_towers()
 
   def process_iterations(self, target_iteration):
-    self.towers = [[(0, "#000000") for _ in range(8)] for _ in range(72)]
+    self.towers_to_draw = self.initial_towers.copy()
 
     for iteration in self.iterations_log[:target_iteration]:
       disk, from_, to_ = iteration
-
-      if self.can_place_on_top(disk, to_):
+      print(iteration, self.towers_to_draw)
+      if 0 <= from_ < 8 and 0 <= to_ < 8:
         for row in range(72):
-          if self.towers[row][from_] == disk:
-            self.towers[row][from_] = (0, "#000000")
+          if self.towers_to_draw[row][from_] == disk:
+            self.towers_to_draw[row][from_] = (0, "#000000")
             break
         for row in range(72):
-          if self.towers[row][to_] == (0, "#000000"):
-            self.towers[row][to_] = disk
+          if self.towers_to_draw[row][to_] == (0, "#000000"):
+            self.towers_to_draw[row][to_] = disk
             break
-
 
   def draw_end(self):
-    self.towers = [[(0, "#000000") for _ in range(8)] for _ in range(72)]
+    self.towers_to_draw = [[(0, "#000000") for _ in range(8)] for _ in range(72)]
     for i, disk in enumerate(self.disks):
-        self.towers[i][0] = disk
+        self.towers_to_draw[i][0] = disk
     self.draw_towers()
-
-
 
   def draw_floating_disk(self, disk, from_, to_):
     w = disk[0]
@@ -214,78 +238,135 @@ class App(Frame):
     y = y0 - RINGS * HEIGHT - 30
     self.canvas.create_rectangle(x, y, x + w, y + HEIGHT, outline=color, fill=color)
 
-  def find_tower(self, disk):
-    for tower in range(8):
-      for row in range(72):
-        if self.towers[row][tower][0] == disk[0][0]:
-          return tower
-    return None
+
+
+
+
+
+
+  def move_top_disk(self, src, dst):
+    disk = self.towers[src].pop()        # remove top disk from source
+    self.towers[dst].append(disk)        # place it on destination
+
+    for row in range(72):
+      if self.towers_to_draw[row][src-1][0] == disk[0]:
+        self.towers_to_draw[row][src-1] = (0, "#000000")
+        break
+    for row in range(72):
+      if self.towers_to_draw[row][dst-1][0] == 0:
+        self.towers_to_draw[row][dst-1] = disk
+        break
+        
+    self.log_iteration(disk, src, dst)
+
+  def log_iteration(self, disk, from_, to_):
+    self.current_iteration += 1
+    self.iterations_log.append((disk, from_, to_))
+    # print(f"перемещен диск {disk} с башни {7 - from_} на башню {7 - to_}")
+
+  def free_top(self, peg, max_diameter, exclude=None):
+      if exclude is None:
+          exclude = set()
+      # If peg is empty or top disk is smaller than the moving disk, it's free
+      if not self.towers[peg] or self.towers[peg][-1] < max_diameter:
+          return
+      # Otherwise, move the smaller top disk out of the way
+      top_small = self.towers[peg][-1]
+      for neighbor in allowed_transitions[peg]:
+          if neighbor == 1 or neighbor in exclude:
+              continue
+          if not self.towers[neighbor] or self.towers[neighbor][-1] < top_small:
+              self.free_top(neighbor, top_small, exclude | {peg})
+              self.move_top_disk(peg, neighbor)
+              self.free_top(peg, max_diameter, exclude)
+              return
+      # As a fallback, allow moving into any other neighbor
+      for neighbor in allowed_transitions[peg]:
+          if neighbor in exclude:
+              continue
+          if not self.towers[neighbor] or self.towers[neighbor][-1] < top_small:
+              self.free_top(neighbor, top_small, exclude | {peg})
+              self.move_top_disk(peg, neighbor)
+              self.free_top(peg, max_diameter, exclude)
+              return
+
+  def move_to_target(self, d):
+      # Find which tower currently holds disk d
+      src = next(peg for peg, stack in self.towers.items() if d in stack)
+      if src == 1:
+          return
+      # Find path from src to target (1) using BFS
+      parents = {src: None}
+      queue = deque([src])
+      while queue:
+          peg = queue.popleft()
+          if peg == 1:
+            break
+          for neigh in allowed_transitions[peg]:
+            if neigh not in parents:
+              parents[neigh] = peg
+              queue.append(neigh)
+      # Reconstruct the path
+      path = []
+      peg = 1
+      while peg is not None:
+          path.append(peg)
+          peg = parents[peg]
+      path.reverse()  # now [src, ..., 1]
+      # Move disk along the path
+      for i in range(len(path) - 1):
+          cur = path[i]
+          nxt = path[i+1]
+          # Ensure target peg is free for this disk
+          self.free_top(nxt, d, exclude={cur})
+          self.move_top_disk(cur, nxt)
+
 
   def can_place_on_top(self, disk, tower_index):
-    for row in range(72):
-      if self.towers[row][tower_index][0] == 0:
-        if row == 0:
-          return True
-        below_disk = self.towers[row - 1][tower_index]
-        return below_disk[0] > disk[0]
+    disk_diameter = disk[0] if isinstance(disk, tuple) else disk
+    
+    target_tower_top_disk_diameter = 0
+    target_tower_top_disk_diameter = self.towers_top_disks[tower_index]
+    if target_tower_top_disk_diameter < disk_diameter:
+      return True
     return False
 
-  def find_path_route(self, from_index, to_index, disk):
-    from_peg = from_index + 1
-    to_peg = to_index + 1
-
-    max_steps = 500
-    steps = 0
-    visited = set()
-    parent = {from_peg: None}
-    queue = deque([from_peg])
-
-    path_found = False
-
-    while queue and steps < max_steps:
-      steps += 1
-      current = queue.popleft()
-      if current == to_peg:
-        path_found = True
-        break
-      for neighbor in allowed_transitions.get(current, []):
-        if neighbor not in visited:
-          if self.can_place_on_top(disk[0], neighbor - 1):
-            visited.add(neighbor)
-            parent[neighbor] = current
-            queue.append(neighbor)
-
-    if not path_found:
-      return []
-
-    path = []
-    current = to_peg
-    while current is not None:
-      path.append(current - 1)
-      current = parent.get(current)
-
-    return path[::-1]
-
   def calculate_total_iterations(self):
-    self.moves_log = []
-    total = 0
-    for disk in self.disks:
-      print(f"Диск {disk} с башни {disk[2] + 1}")
-      if disk[0] == 0:
-          continue
-      from_tower = disk[2]
-      to_tower = 0
-      if from_tower == to_tower:
-          continue
-      path = self.find_path_route(from_tower, to_tower, disk)
-      if not path:
-          print(f"⚠️ Нет допустимого пути для диска {disk} с башни {from_tower + 1} на башню {to_tower + 1}")
-          continue
-      for i in range(len(path) - 1):
-          self.moves_log.append((disk, path[i], path[i + 1]))
-      total += len(path) - 1
-    print(f"✅ Всего найдено шагов: {total}")
-    return total
+    # Reset logs and counters
+    self.iterations_log = []
+    self.current_iteration = 0
+    # Initialize towers without colors for pure logic
+    self.init_towers(update_existing=True)
+
+    self.towers_to_draw = [[(0, "#000000") for _ in range(8)] for _ in range(72)]
+    for peg, stack in self.towers.items():
+        for i, disk in enumerate(reversed(stack)):
+            self.towers_to_draw[i][peg] = disk
+    
+    # Gather all disks sorted from largest to smallest
+    all_disks = sorted([d for stack in self.towers.values() for d in stack], reverse=True)
+    # Move each disk in turn to Tower 1
+    for disk in all_disks:
+      # Free any smaller disks blocking the disk on its current tower
+      current_peg = next((peg for peg, stack in self.towers.items() if disk in stack), None)
+      if current_peg is None or current_peg == 0:
+        continue
+      if self.towers[current_peg][-1] != disk:
+        self.free_top(current_peg, disk)
+      # Move the disk along allowed transitions to Tower 1
+      self.move_to_target(disk)
+    # Record total iterations
+    self.total_iterations = self.current_iteration
+    print(f"Всего шагов: {self.total_iterations}")
+    self.initial_towers = {k: list(v) for k, v in self.towers.items()}
+
+
+
+
+
+
+
+
 
   def draw_pos1(self):
     p = int(self.input_pos1.get("1.0", "end").replace("\n", ""))
