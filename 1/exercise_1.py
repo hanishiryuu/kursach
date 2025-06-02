@@ -1,8 +1,11 @@
+import os
 from collections import Counter
 
-resource_file_path = './resource_1.txt'
+dirname = os.path.dirname(__file__)
 
-result_file_path = 'result_1.txt'
+resource_file_path = os.path.join(dirname, './resource_1.txt')
+
+result_file_path = os.path.join(dirname, './result_1.txt')
 
 with open(resource_file_path, 'r') as resource_file:
   words = resource_file.read().split()
