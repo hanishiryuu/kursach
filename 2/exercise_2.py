@@ -63,6 +63,7 @@ class App:
         case 'DEPOSIT':
           if len(operands) < 2:
             self.output.insert(tk.END, f'Недостаточно параметров\n')
+            return
 
           name, sum = operands[0], int(operands[1])
           self.clients[name] = self.clients.get(name, 0) + sum
@@ -71,6 +72,7 @@ class App:
         case 'WITHDRAW':
           if len(operands) < 2:
             self.output.insert(tk.END, f'Недостаточно параметров\n')
+            return
 
           name, sum = operands[0], int(operands[1])
           self.clients[name] = self.clients.get(name, 0) - sum
@@ -92,6 +94,7 @@ class App:
         case 'TRANSFER':
           if len(operands) < 3:
             self.output.insert(tk.END, f'Недостаточно параметров\n')
+            return
 
           client_from, client_to, sum = operands[0], operands[1], int(operands[2])
           self.clients[client_from] = self.clients.get(name, 0) - sum
@@ -101,6 +104,7 @@ class App:
         case 'INCOME':
           if len(operands) == 0:
             self.output.insert(tk.END, f'Недостаточно параметров\n')
+            return
           p = int(operands[0])
           for name, balance in self.clients.items():
             self.clients[name] += int(balance * ( p / 100 ))
@@ -111,6 +115,7 @@ class App:
             self.output.insert(tk.END, f'Команда введена неверно: {operation}\n')
           else:
             self.output.insert(tk.END, f'Неизвестная команда: {operation}\n')
+          return
           
   def clearInput(self):
     self.input.delete('1.0', tk.END)
