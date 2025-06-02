@@ -81,7 +81,6 @@ class App(Frame):
 
     self.get_initial_state()
     self.total_iterations = self.calculate_total_iterations()
-    print(f"Общее количество итераций: {self.total_iterations}")
     self.flag = False
  
   def get_initial_state(self):
@@ -93,10 +92,11 @@ class App(Frame):
 
   def init_towers(self, make_colors=True):
     self.towers = [[(0, "#000000") for _ in range(8)] for _ in range(72)]
+    student_id = self.student_id[::-1]
     for tower in range(8):
-      for row in range(int(self.student_id[tower])):
+      for row in range(int(student_id[tower])):
         m = tower + 1
-        n = int(self.student_id[tower]) - row
+        n = int(student_id[tower]) - row
         if make_colors:
           color = f"#{random.randint(100000, 999999)}"
         self.towers[row][tower] = (m * 10 + n, color)
