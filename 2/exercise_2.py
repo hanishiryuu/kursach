@@ -49,23 +49,29 @@ class App:
 
   def calculate(self):
     commands = self.input.get('1.0', tk.END).strip().split('\n')
-    self.clearOutput
+    self.clearOutput()
 
     for command in commands: 
       if not command.strip():
         continue
 
       parts = command.strip().split()
-      operation = parts[0].upper()
+      operation = parts[0]
       operands = parts[1:]
 
       match operation:
         case 'DEPOSIT':
+          if len(operands) < 2:
+            self.output.insert(tk.END, f'Недостаточно параметров\n')
+
           name, sum = operands[0], int(operands[1])
           self.clients[name] = self.clients.get(name, 0) + sum
           self.output.insert(tk.END, f'Депозит: {name} на сумму {sum}уе\n')
 
         case 'WITHDRAW':
+          if len(operands) < 2:
+            self.output.insert(tk.END, f'Недостаточно параметров\n')
+
           name, sum = operands[0], int(operands[1])
           self.clients[name] = self.clients.get(name, 0) - sum
           self.output.insert(tk.END, f'Снятие: {name} на сумму {sum}уе\n')
@@ -84,16 +90,27 @@ class App:
               self.output.insert(tk.END, f'{name} {balance}уе\n')
           
         case 'TRANSFER':
+          if len(operands) < 3:
+            self.output.insert(tk.END, f'Недостаточно параметров\n')
+
           client_from, client_to, sum = operands[0], operands[1], int(operands[2])
           self.clients[client_from] = self.clients.get(name, 0) - sum
           self.clients[client_to] = self.clients.get(name, 0) + sum
           self.output.insert(tk.END, f'Перевод: От {client_from} к {client_to} на сумму {sum}уе\n')
 
         case 'INCOME':
+          if len(operands) == 0:
+            self.output.insert(tk.END, f'Недостаточно параметров\n')
           p = int(operands[0])
           for name, balance in self.clients.items():
             self.clients[name] += int(balance * ( p / 100 ))
           self.output.insert(tk.END, f'Начислено: {p}% от суммы остатка всем клиентам\n')
+
+        case _:
+          if operation.upper() in ['DEPOSIT', 'WITHDRAW', 'BALANCE', 'TRANSFER', 'INCOME']:
+            self.output.insert(tk.END, f'Команда введена неверно: {operation}\n')
+          else:
+            self.output.insert(tk.END, f'Неизвестная команда: {operation}\n')
           
   def clearInput(self):
     self.input.delete('1.0', tk.END)
@@ -102,8 +119,8 @@ class App:
     self.output.delete('1.0', tk.END)
     
   def clear(self):
-    self.clearInput
-    self.clearOutput
+    self.clearInput()
+    self.clearOutput()
 
 if __name__ == '__main__':
   root = tk.Tk()
