@@ -65,53 +65,53 @@ class App:
             self.output.insert(tk.END, f'Недостаточно параметров\n')
             continue
 
-          name, sum = operands[0], float(operands[1])
+          name, sum = operands[0], int(operands[1])
           self.clients[name] = self.clients.get(name, 0) + sum
-          self.output.insert(tk.END, f'Депозит: {name} на сумму {sum:.10g}уе\n')
+          self.output.insert(tk.END, f'Депозит: {name} на сумму {sum}уе\n')
 
         case 'WITHDRAW':
           if len(operands) < 2:
             self.output.insert(tk.END, f'Недостаточно параметров\n')
             continue
 
-          name, sum = operands[0], float(operands[1])
+          name, sum = operands[0], int(operands[1])
           self.clients[name] = self.clients.get(name, 0) - sum
-          self.output.insert(tk.END, f'Снятие: {name} на сумму {sum:.10g}уе\n')
+          self.output.insert(tk.END, f'Снятие: {name} на сумму {sum}уе\n')
 
         case 'BALANCE':
           if len(operands) == 0:
             for name, balance in self.clients.items():
-              self.output.insert(tk.END, f'{name} {balance:.10g}уе\n')
+              self.output.insert(tk.END, f'{name} {balance}уе\n')
           else:
             name = operands[0]
             balance = self.clients.get(name, 'NO CLIENT')
 
             if balance == 'NO CLIENT':
-              self.output.insert(tk.END, f'{name} {balance:.10g}\n')
+              self.output.insert(tk.END, f'{name} {balance}\n')
             else:
-              self.output.insert(tk.END, f'{name} {balance:.10g}уе\n')
+              self.output.insert(tk.END, f'{name} {balance}уе\n')
           
         case 'TRANSFER':
           if len(operands) < 3:
             self.output.insert(tk.END, f'Недостаточно параметров\n')
             continue
 
-          client_from, client_to, sum = operands[0], operands[1], float(operands[2])
+          client_from, client_to, sum = operands[0], operands[1], int(operands[2])
           self.clients[client_from] = self.clients.get(name, 0) - sum
           self.clients[client_to] = self.clients.get(name, 0) + sum
-          self.output.insert(tk.END, f'Перевод: От {client_from} к {client_to} на сумму {sum:.10g}уе\n')
+          self.output.insert(tk.END, f'Перевод: От {client_from} к {client_to} на сумму {sum}уе\n')
 
         case 'INCOME':
           if len(operands) == 0:
             self.output.insert(tk.END, f'Недостаточно параметров\n')
             continue
-          p = float(operands[0])
+          p = int(operands[0])
           for name, balance in self.clients.items():
             if balance < 0:
               continue
               
             self.clients[name] += balance * ( p / 100 )
-          self.output.insert(tk.END, f'Начислено: {p:.10g}% от суммы остатка всем клиентам\n')
+          self.output.insert(tk.END, f'Начислено: {p}% от суммы остатка всем клиентам\n')
 
         case _:
           if operation.upper() in ['DEPOSIT', 'WITHDRAW', 'BALANCE', 'TRANSFER', 'INCOME']:
