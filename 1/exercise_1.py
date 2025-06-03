@@ -1,5 +1,5 @@
 import os
-from collections import Counter
+import string
 
 dirname = os.path.dirname(__file__)
 
@@ -8,11 +8,19 @@ resource_file_path = os.path.join(dirname, './resource_1.txt')
 result_file_path = os.path.join(dirname, './result_1.txt')
 
 with open(resource_file_path, 'r') as resource_file:
-  words = resource_file.read().split()
+  text = resource_file.read()
 
-data = Counter(words).most_common()
+translator = str.maketrans('', '', string.punctuation)
+words = text.translate(translator).split()
 
-data_sorted = sorted(data, key=lambda x: (-x[1], x[0]))
+word_counts = {}
+for word in words:
+  if word in word_counts:
+    word_counts[word] += 1
+  else:
+    word_counts[word] = 1
+
+data_sorted = sorted(word_counts.items(), key=lambda x: (-x[1], x[0]))
 
 with open(result_file_path, 'w') as result_file:
   for word, count in data_sorted:

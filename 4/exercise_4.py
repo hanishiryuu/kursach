@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import Frame, Canvas, Text, Button, BOTH, Label
+from tkinter import Frame, Canvas, Text, Button, Label
 import random
 from copy import deepcopy
 
@@ -25,11 +25,9 @@ class App(Frame):
   def __init__(self):
     super(App, self).__init__()
     self.master.title('Ханойские башни')
-    # self.student_id = '70194603'
-    self.student_id = '99999999'
+    self.student_id = '70194603'
     self.disks = [] # [(31, '#348755'), 0, 2] disk_data, row, tower
     self.total_iterations = 0
-    self.current_iteration = 0
     self.iterations_log = []
     self.floating_disk = () # [(31, '#348755'), 0, 2] disk_data, from_, old_row, to_
 
@@ -46,7 +44,7 @@ class App(Frame):
     self.button_end = Button(self.master, text="Окончить", command=self.draw_end)
 
     self.labels_y = y0 + 100
-    self.current_iteration_label = Label(self.master, text=f"Текущая итерация {self.current_iteration}")
+    self.current_iteration_label = Label(self.master, text=f"Текущая итерация: 0")
     self.current_iteration_label.place(x=x0, y=self.labels_y + 40, width=200, height=20)
 
     cnt = 8
@@ -173,7 +171,7 @@ class App(Frame):
         target_iteration = float(before_comma + '.' + after_comma[:3])
         is_float = True
 
-    self.current_iteration_label.config(text=f"Текущая итерация {target_iteration}")
+    self.current_iteration_label.config(text=f"Текущая итерация: {target_iteration}")
 
     if is_float:
       self.process_iterations(target_iteration_int - 1)
