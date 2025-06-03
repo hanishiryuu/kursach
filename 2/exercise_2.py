@@ -97,8 +97,8 @@ class App:
             continue
 
           client_from, client_to, sum = operands[0], operands[1], int(operands[2])
-          self.clients[client_from] = self.clients.get(name, 0) - sum
-          self.clients[client_to] = self.clients.get(name, 0) + sum
+          self.clients[client_from] = self.clients.get(client_from, 0) - sum
+          self.clients[client_to] = self.clients.get(client_to, 0) + sum
           self.output.insert(tk.END, f'Перевод: От {client_from} к {client_to} на сумму {sum}уе\n')
 
         case 'INCOME':
@@ -110,7 +110,7 @@ class App:
             if balance < 0:
               continue
               
-            self.clients[name] += balance * ( p / 100 )
+            self.clients[name] += int(balance * ( p / 100 ))
           self.output.insert(tk.END, f'Начислено: {p}% от суммы остатка всем клиентам\n')
 
         case _:
