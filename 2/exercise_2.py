@@ -107,16 +107,10 @@ class App:
             continue
           p = float(operands[0])
           for name, balance in self.clients.items():
-            is_balance_negative = balance < 0
-            if is_balance_negative:
-              balance = -balance
+            if balance < 0:
+              continue
               
-            new_balance = balance * ( p / 100 )
-
-            if is_balance_negative:
-              new_balance = -new_balance
-            
-            self.clients[name] += new_balance
+            self.clients[name] += balance * ( p / 100 )
           self.output.insert(tk.END, f'Начислено: {p:.10g}% от суммы остатка всем клиентам\n')
 
         case _:
