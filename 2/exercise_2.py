@@ -64,10 +64,10 @@ class App:
       match operation:
         case 'DEPOSIT':
           if len(operands) != 1:
-            error_message = 'Некорректное кол-во аргументов'
+            error_message = 'Некорректное кол-во аргументов\n'
             is_error = True
           if not isinstance(operands[0], int): 
-            error_message = 'Некорректный тип аргументов'
+            error_message = 'Некорректный тип аргументов\n'
             is_error = True
 
           if is_error:
@@ -80,10 +80,10 @@ class App:
 
         case 'WITHDRAW':
           if len(operands) != 2:
-            error_message = 'Некорректное кол-во аргументов'
+            error_message = 'Некорректное кол-во аргументов\n'
             is_error = True
           if not isinstance(operands[0], str) or not isinstance(operands[1], int): 
-            error_message = 'Некорректный тип аргументов'
+            error_message = 'Некорректный тип аргументов\n'
             is_error = True
 
           if is_error:
@@ -96,10 +96,10 @@ class App:
 
         case 'BALANCE':
           if len(operands) > 1:
-            error_message = 'Некорректное кол-во аргументов'
+            error_message = 'Некорректное кол-во аргументов\n'
             is_error = True
           if len(operands) == 1 and not isinstance(operands[1], str):
-            error_message = 'Некорректный тип аргументов'
+            error_message = 'Некорректный тип аргументов\n'
             is_error = True
           if is_error:
             self.output.insert(tk.END, error_message)
@@ -119,10 +119,10 @@ class App:
           
         case 'TRANSFER':
           if len(operands) != 3:
-            error_message = 'Некорректное кол-во аргументов'
+            error_message = 'Некорректное кол-во аргументов\n'
             is_error = True
           if not isinstance(operands[0], str) and not isinstance(operands[1], str) and not isinstance(operands[2], int):
-            error_message = 'Некорректный тип аргументов'
+            error_message = 'Некорректный тип аргументов\n'
             is_error = True
           if is_error:
             self.output.insert(tk.END, error_message)
@@ -135,10 +135,10 @@ class App:
 
         case 'INCOME':
           if len(operands) != 1:
-            error_message = 'Некорректное кол-во аргументов'
+            error_message = 'Некорректное кол-во аргументов\n'
             is_error = True
           if not isinstance(operands[0], int):
-            error_message = 'Некорректный тип аргументов'
+            error_message = 'Некорректный тип аргументов\n'
             is_error = True
           if is_error:
             self.output.insert(tk.END, error_message)
